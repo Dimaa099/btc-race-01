@@ -44,9 +44,9 @@ Indicators over the closes seen so far: a fast EMA (10 bars), a slow EMA
 - trailing stop: once the best close since entry is 100 bps in profit, exit
   when the close falls 140 bps under that peak,
 - take-profit at +700 bps over cost,
-- time stop: held 180 bars and not above cost, free the capital.
+- time stop: held 120 bars and not above cost, free the capital.
 
-After any exit, a 20-bar cooldown blocks re-entry. Every order carries a
+After any exit, a 35-bar cooldown blocks re-entry. Every order carries a
 300 bps `max_slippage_bps` cap against the latest close. Entries need 320 bars
 of history first, so the bot is silent for roughly the first five hours of a
 window rather than trading blind.
@@ -65,11 +65,16 @@ race's 25% max-drawdown guardrail with a wide margin.
 On the kit's published dev window (1,440 bars; BTC fell 4.0% start to end,
 with a −7.6% capitulation and a +3.9% recovery into the close):
 
-- **net PnL +4.136224 USDC** after every fee, slippage and impact — the dev
+- **net PnL +13.313524 USDC** after every fee, slippage and impact — the dev
   gate asks for anything above $0,
-- 6 trades (3 round trips), 0 rejected orders, fees 1.197261 USDC,
-- max drawdown 1.710%, net PnL at 2x fees +2.932726 USDC,
+- 6 trades (3 round trips), 0 rejected orders, fees 1.205017 USDC,
+- max drawdown 0.882%, net PnL at 2x fees +12.785953 USDC,
 - two executions produce byte-identical replies.
+
+(The first submitted revision of this bot, with a 180-bar time stop and a
+20-bar cooldown, graded +4.136224 USDC on the same window; the revision
+above replaced it after beating it on the dev window and on paired
+block-bootstrap stress paths in both drift regimes — see NOTES-V2.md.)
 
 Every trading baseline in the kit loses money on the same window
 (buy-and-hold −44.01, momentum −40.92, RSI-Bollinger −57.37, ADX-momentum

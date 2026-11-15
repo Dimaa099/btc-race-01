@@ -43,6 +43,15 @@ import sys
 # different choices (no hard stop, much deeper reversal thresholds, a wider
 # trailing stop) were clearly worse either on the dev window or on
 # bootstrapped up/down-drift stress paths. See NOTES.md and dev-results.md.
+#
+# V2 revision (see NOTES-V2.md): the time stop was shortened 180 -> 120 bars
+# and the post-exit cooldown lengthened 20 -> 35. On paired block-bootstrap
+# stress paths (identical synthetic windows for both versions) the pair beat
+# the original on both drift regimes and on the dev window: a position that
+# is still under water after two hours is usually in the grind that produced
+# the loss, and the longer sit-out stops the bot re-entering that same chop
+# on the first uptick. Both values sit inside flat plateaus (time stop
+# 120-150, cooldown 28-45 graded alike), not on a single-path peak.
 # --------------------------------------------------------------------------
 FAST_SPAN = 10            # fast EMA over closes, bars
 SLOW_SPAN = 50            # slow EMA over closes, bars
@@ -59,8 +68,8 @@ HARD_STOP_BPS = 160       # exit: close this far under the average cost price
 TRAIL_ARM_BPS = 100       # trailing stop arms once this far in profit
 TRAIL_STOP_BPS = 140      # exit: close this far under the peak close since entry
 TAKE_PROFIT_BPS = 700     # exit: bank it at this gain
-TIME_STOP_BARS = 180      # exit: held this long and not above cost
-COOLDOWN_BARS = 20        # bars to sit out after an exit
+TIME_STOP_BARS = 120      # exit: held this long and not above cost
+COOLDOWN_BARS = 35        # bars to sit out after an exit
 MAX_SLIPPAGE_BPS = 300    # per-order slippage cap vs the latest close
 
 

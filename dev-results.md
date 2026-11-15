@@ -9,12 +9,12 @@ charges, computed by `grade_dev.py` in this repository.
 
 ```text
 bars 1440  deterministic(two runs identical): True
-net PnL  +4.136224 USDC   trades 6   rejected 0
-fees     1.197261 USDC   max drawdown 1.710%
-at 2x fees: net PnL +2.932726 USDC, trades 6
+net PnL  +13.313524 USDC   trades 6   rejected 0
+fees     1.205017 USDC   max drawdown 0.882%
+at 2x fees: net PnL +12.785953 USDC, trades 6
 hourly block PnL (USDC): +0.00 +0.00 +0.00 +0.00 +0.00 +0.00 +0.00 -2.25 +1.73
-  +1.54 -2.23 +0.00 +0.00 +1.95 -4.39 +2.16 -8.90 +13.83 +5.51 -1.26 -0.76
-  -2.81 +0.00 +0.00
+  +0.46 +0.00 +0.00 +0.00 +1.96 -4.39 +2.17 -1.00 +13.96 +5.56 -1.27 -0.77
+  -2.84 +0.00 +0.00
 ```
 
 Fills (bar timestamps are the fill bar's close time, ms):
@@ -22,16 +22,24 @@ Fills (bar timestamps are the fill bar's close time, ms):
 | fill bar | side | price (USDC) | notional (USDC) | fee (USDC) |
 |---|---|---|---|---|
 | 1794670980000 | buy  | 65,606.85 | 500.00 | 0.2000 |
-| 1794682080000 | sell | 65,500.86 | 498.79 | 0.1996 |
-| 1794694500000 | buy  | 63,938.09 | 499.40 | 0.1998 |
-| 1794704700000 | sell | 62,814.00 | 490.22 | 0.1962 |
-| 1794707520000 | buy  | 62,614.95 | 494.81 | 0.1979 |
-| 1794722220000 | sell | 64,503.53 | 509.33 | 0.2038 |
+| 1794678900000 | sell | 65,652.19 | 499.94 | 0.2001 |
+| 1794694500000 | buy  | 63,938.17 | 499.97 | 0.2000 |
+| 1794702540000 | sell | 63,826.64 | 498.70 | 0.1996 |
+| 1794707520000 | buy  | 62,615.57 | 499.34 | 0.1997 |
+| 1794722220000 | sell | 64,503.10 | 513.98 | 0.2057 |
 
-Three round trips: a scratch (−$1.21), a hard-stopped dip that kept falling
-(−$9.18), and the capitulation reversal bought at 62,614.95 near the window's
-62,082 low and trailed out at 64,503.53 (+$14.52). The dev gate (net PnL > 0)
-is passed with the drawdown guardrail (25%) met by a wide margin (1.710%).
+Three round trips: a scratch (−$0.06), a dip cut by the 120-bar time stop
+before it could grind into a hard stop (−$1.27), and the capitulation
+reversal bought at 62,615.57 near the window's 62,082 low and trailed out
+at 64,503.10 (+$14.64). The dev gate (net PnL > 0) is passed with the
+drawdown guardrail (25%) met by a wide margin (0.882%).
+
+This is the v2 revision of the bot (see NOTES-V2.md): the first submitted
+version, identical except for a 180-bar time stop and a 20-bar cooldown,
+graded +4.136224 USDC here (fees 1.197261, max drawdown 1.710%, +2.932726
+at 2x fees), with its third trade hard-stopped for −$9.18. The shorter time
+stop and longer cooldown replaced it after beating it on the dev window and
+on paired block-bootstrap stress paths in both drift regimes.
 
 ## How the grader was validated
 
@@ -65,15 +73,21 @@ stands in for it.)
 | adx-momentum | −86.598664 | 35 | 13.632702 | 8.820% |
 | ema-cross | −134.953038 | 63 | 23.716842 | 13.653% |
 | hold-cash | 0.000000 | 0 | 0.000000 | 0.000% (fails the dev gate: not > 0, and no trades) |
-| **this bot** | **+4.136224** | **6** | **1.197261** | **1.710%** |
+| **this bot (v2)** | **+13.313524** | **6** | **1.205017** | **0.882%** |
 
 ## Robustness notes (not scores)
 
 Block-bootstrapped synthetic windows (60-bar blocks of the dev window's own
-returns, depths drawn from real bars; 12 paths per regime) give the shape of
-the strategy rather than a forecast: on down-drift paths the median outcome
-was −15.86 USDC with worst max drawdown 7.08%, and on mirrored up-drift paths
-the median was +21.10 USDC, positive in 8 of 12. A long-only bot with ~25 bps
-round-trip costs cannot beat a falling tape; it can only lose less than the
-field while keeping its upside participation, which is what the sizing,
-confirmation and stop rules are for.
+returns, depths drawn from real bars) give the shape of the strategy rather
+than a forecast. Graded in pairs on identical synthetic paths (48 per
+regime), the v2 revision's median outcome was −5.91 USDC on down-drift
+paths (worst max drawdown 5.93%) and +12.20 USDC on mirrored up-drift paths,
+against the first version's −6.49 and +11.72 on the same paths; on a
+24-path subset the pair read −7.28 / +9.26 against −11.85 / +8.91. (The
+first version's build notes quote −15.86 / +21.10 from its own 12-path
+harness, which was not saved; two re-implementations of the described
+method agree with each other and give the first version the milder figures
+above, so the paired comparison is the like-for-like one.) A long-only bot
+with ~25 bps round-trip costs cannot beat a falling tape; it can only lose
+less than the field while keeping its upside participation, which is what
+the sizing, confirmation and stop rules are for.
